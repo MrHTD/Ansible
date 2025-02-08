@@ -1,0 +1,31 @@
+- hosts: webservers
+  become: yes
+
+  vars:
+    domain_name: "example.com"
+    port: 3000
+    ssl_certificate_path: "/etc/nginx/ssl/{{ domain_name }}.crt"
+    ssl_certificate_key_path: "/etc/nginx/ssl/{{ domain_name }}.key"
+  
+  tasks:
+    - name: Create NGINX configuration from template
+      template:
+        src: templates/nginx-configuration.j2
+        dest: /etc/nginx/sites-available/{{ domain_name }}
+      notify: 
+        - Reload NGINX
+
+    - name: Enable NGINX site
+      file:
+        src: /etc/nginx/sites-available/{{ domain_name }}
+        dest: /etc/nginx/sites-enabled/{{ domain_name }}
+        state: link
+      notify: 
+        - Reload NGINX
+
+  handlers:
+    - name: Validate and Reload NGINX
+      command: nginx -t
+      
+    - name: Reload NGINX
+      command: systemctl reload nginx.service

@@ -1,0 +1,51 @@
+- hosts: webservers
+  become: yes
+
+  tasks:
+    - name: Installing required packages (npm, curl)
+      apt:
+        name:
+          - npm
+          - curl
+        state: latest
+        update_cache: yes
+
+    - name: Installing NVM
+      shell: |
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
+      args:
+        creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+        executable: /bin/bash
+
+    - name: Loading NVM
+      shell: |
+        export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      args:
+        executable: /bin/bash
+
+    - name: Install Node.js (LTS)
+      shell: |
+        nvm install --lts
+      args:
+        executable: /bin/bash
+
+    - name: Install Yarn
+      shell: |
+        npm install -g yarn
+      args:
+        executable: /bin/bash
+
+    - name: Install pm2
+      community.general.npm:
+        name: pm2
+        global: yes
+        state: present
+
+    - name: PM2 Installation
+      shell: |
+        pm2 completion install
+        pm2 startup
+      args:
+        executable: /bin/bash
+       
