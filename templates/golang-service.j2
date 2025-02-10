@@ -1,0 +1,14 @@
+[Unit]
+Description={{Description}}
+After=network.target
+                        
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+ExecStart={{ExecStart}}
+WorkingDirectory={{WorkingDirectory}}
+EnvironmentFile={{ EnvFile }}
+                        
+[Install]
+WantedBy=multi-user.target

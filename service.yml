@@ -1,0 +1,35 @@
+- hosts: webservers
+  become: yes
+
+  vars:
+    service_name: "ppg-go"
+    Description: "This is {{service_name}} Application"
+    service_alias: "{{service_name}}.service"
+    ExecStart: "/home/devxonic/development/{{service_name}}/cmd/api/main"
+    WorkingDirectory: "/home/devxonic/development/{{service_name}}/cmd/api/"
+    EnvFile: "/home/devxonic/development/{{service_name}}/.env"
+
+  tasks:
+    - name: Create systemd service file
+      template:
+        src: templates/golang-service.j2
+        dest: "/etc/systemd/system/{{ service_name }}.service"
+      notify: Reload systemd
+
+    - name: Add alias for viewing logs with colors
+      lineinfile:
+        path: ~/.bashrc
+        line: "alias golang-fu-logs='journalctl -fu golang-file-uploader.service | ccze -A'"
+        create: yes
+      notify: Reload Bash
+
+  handlers:
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+        name: "{{ service_name }}"
+        state: restarted
+        enabled: yes
+
+    - name: Reload Bash
+      shell: source ~/.bashrc
