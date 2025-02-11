@@ -18,8 +18,8 @@
 
     - name: Add alias for viewing logs with colors
       lineinfile:
-        path: ~/.bashrc
-        line: "alias golang-fu-logs='journalctl -fu golang-file-uploader.service | ccze -A'"
+        path: "~/.bashrc"
+        line: "alias {{ service_name }}-logs='journalctl -fu {{ service_name }}.service | ccze -A'"
         create: yes
       notify: Reload Bash
 
@@ -33,3 +33,5 @@
 
     - name: Reload Bash
       shell: source ~/.bashrc
+      args:
+        executable: /bin/bash
