@@ -3,7 +3,7 @@
 
   vars:
     domain_name: "example.com"
-    port: 3000
+    app_port: 3000
     ssl_certificate_path: "/etc/nginx/ssl/{{ domain_name }}.crt"
     ssl_certificate_key_path: "/etc/nginx/ssl/{{ domain_name }}.key"
   
