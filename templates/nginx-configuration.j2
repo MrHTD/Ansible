@@ -34,7 +34,7 @@ server {
 #}
 
     location / {
-        proxy_pass http://localhost:{{ port }};
+        proxy_pass http://localhost:{{ app_port }};
         proxy_http_version 1.1;
 
         # WebSocket and upgrade headers
