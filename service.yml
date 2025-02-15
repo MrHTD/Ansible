@@ -6,7 +6,7 @@
     Description: "This is {{service_name}} Application"
     service_alias: "{{service_name}}.service"
     ExecStart: "/home/devxonic/development/{{service_name}}/cmd/api/main"
-    WorkingDirectory: "/home/devxonic/development/{{service_name}}/cmd/api/"
+    WorkingDirectory: "/home/devxonic/development/{{service_name}}/cmd/api"
     EnvFile: "/home/devxonic/development/{{service_name}}/.env"
 
   tasks:

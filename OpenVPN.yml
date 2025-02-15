@@ -1,0 +1,75 @@
+- hosts: webservers
+  become: yes
+
+  vars:
+    client_name: "client"
+
+  tasks:
+    - name: Copying easy-rsa to openvpn directory
+      copy:
+        src: /usr/share/easy-rsa
+        dest: /etc/openvpn/
+      remote_src: yes
+
+    - name: Create vars file
+      copy:
+        src: /etc/openvpn/vars.example
+        dest: /etc/openvpn/vars
+      remote_src: yes
+
+    - name: Create server configuration file
+      template:
+        src: templates/server_config.j2
+        dest: /etc/openvpn/server/server.conf
+
+    - name: Initialize the PKI with Easy-RSA
+      command: ./easyrsa init-pki
+      args:
+        chdir: /etc/openvpn
+
+    - name: Building the ca with Easy-RSA
+      command: ./easyrsa build-ca nopass  
+      args:
+        chdir: /etc/openvpn
+
+    - name: Generating the server certificate with Easy-RSA
+      command: "{{ item }}"
+      loop:
+        - ./easyrsa gen-req server nopass
+        - ./easyrsa --batch sign-req server server   
+      args:
+        chdir: /etc/openvpn
+
+    - name: Generating the client certificate with Easy-RSA
+      command: "{{ item }}"
+      loop:
+        - ./easyrsa gen-req {{ client_name }} nopass 
+        - ./easyrsa --batch sign-req {{ client_name }} client
+      args:
+        chdir: /etc/openvpn
+
+    - name: Generating the dh & ta certificates
+      command: "{{ item }}"
+      loop:
+        - ./easyrsa gen-dh
+        - openvpn --genkey secret ta.key
+      args:
+        chdir: /etc/openvpn
+
+    - name: Copying ca.crt dh.pem server.crt server.key file
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      remote_src: yes
+      loop:
+        - { src: '/etc/openvpn/pki/ca.crt', dest: '/etc/openvpn/' }
+        - { src: '/etc/openvpn/pki/dh.pem', dest: '/etc/openvpn/' }
+        - { src: '/etc/openvpn/pki/issued/server.crt', dest: '/etc/openvpn/' }
+        - { src: '/etc/openvpn/pki/private/server.key', dest: '/etc/openvpn/' }
+
+  handlers:
+    - name: Reload UFW
+      command: ufw reload
+
+    - name: Reload OpenVPN
+      command: systemctl reload openvpn.service
