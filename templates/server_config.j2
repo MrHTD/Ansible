@@ -277,8 +277,8 @@ status /var/log/openvpn/openvpn-status.log
 # "log" will truncate the log file on OpenVPN startup,
 # while "log-append" will append to it.  Use one
 # or the other (but not both).
-;log         /var/log/openvpn/openvpn.log
-log-append  /var/log/openvpn/openvpn.log
+log /var/log/openvpn/openvpn.log
+;log-append  /var/log/openvpn/openvpn.log
 
 # Set the appropriate level of log
 # file verbosity.
