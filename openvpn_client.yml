@@ -1,0 +1,18 @@
+- hosts: webservers
+  become: yes
+
+  vars:
+    client_name: "client"
+    openvpn_server_ip: ""
+    openvpn_port: "1194"
+
+    ca_cert: "{{ lookup('file', '/etc/openvpn/ca.crt') }}"
+    client_cert: "{{ lookup('file', '/etc/openvpn/pki/issued/' + client_name + '.crt') }}"    
+    client_key: "{{ lookup('file', '/etc/openvpn/pki/private/' + client_name + '.key') }}"
+    tls_crypt_key: "{{ lookup('file', '/etc/openvpn/ta.key') }}"
+
+  tasks:
+    - name: Create OpenVPN client configuration
+      template:
+        src: templates/client.conf.j2
+        dest: /etc/openvpn/clients/{{ client_name }}.ovpn
