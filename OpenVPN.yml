@@ -85,8 +85,8 @@
       loop:
         - { src: '/etc/openvpn/pki/ca.crt', dest: '/etc/openvpn/' }
         - { src: '/etc/openvpn/pki/dh.pem', dest: '/etc/openvpn/' }
-        - { src: '/etc/openvpn/pki/issued/server.crt', dest: '/etc/openvpn/' }
-        - { src: '/etc/openvpn/pki/private/server.key', dest: '/etc/openvpn/' }
+        # - { src: '/etc/openvpn/pki/issued/server.crt', dest: '/etc/openvpn/' }
+        # - { src: '/etc/openvpn/pki/private/server.key', dest: '/etc/openvpn/' }
 
   handlers:
     - name: Reload UFW
