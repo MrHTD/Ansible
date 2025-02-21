@@ -14,5 +14,5 @@
   tasks:
     - name: Create OpenVPN client configuration
       template:
-        src: templates/client.conf.j2
+        src: templates/client.ovpn.j2
         dest: /etc/openvpn/clients/{{ client_name }}.ovpn
