@@ -3,7 +3,7 @@
 
   vars:
     client_name: "client"
-    openvpn_server_ip: ""
+    openvpn_server_ip: "192.168.1.229"
     openvpn_port: "1194"
 
     ca_cert: "{{ lookup('file', '/etc/openvpn/ca.crt') }}"

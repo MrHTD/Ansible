@@ -1,0 +1,34 @@
+client
+dev tun
+proto udp
+nobind
+resolv-retry infinite
+persist-key
+persist-tun
+verb 3
+
+# Encryption
+cipher AES-256-CBC
+data-ciphers AES-256-GCM:AES-128-GCM:CHACHA20-POLY1305
+
+# Authentication
+remote-cert-tls server
+
+# Connection Details
+remote {{ openvpn_server_ip }} {{ openvpn_port }}
+
+<ca>
+{{ ca_cert }}
+</ca>
+
+<cert>
+{{ client_cert }}
+</cert>
+
+<key>
+{{ client_key }}
+</key>
+
+<tls-crypt>
+{{ tls_crypt_key }}
+</tls-crypt>
