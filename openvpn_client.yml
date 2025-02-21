@@ -15,4 +15,4 @@
     - name: Create OpenVPN client configuration
       template:
         src: templates/client.ovpn.j2
-        dest: /etc/openvpn/clients/{{ client_name }}.ovpn
+        dest: /etc/openvpn/client/{{ client_name }}.ovpn
