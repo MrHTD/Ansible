@@ -1,6 +1,9 @@
 - hosts: webservers
   become: yes
 
+  vars:
+    android_home: "/opt/android-sdk"
+
   tasks:
     - name: Installing required packages (npm, curl)
       apt:
@@ -45,6 +48,12 @@
       args:
         executable: /bin/bash
 
+    - name: Create Android SDK directory
+      file:
+        path: "{{ android_home }}"
+        state: directory
+        mode: '0755'
+
     - name: Download Android SDK
       get_url:
         url: "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
@@ -53,7 +62,7 @@
     - name: Extract Android SDK
       ansible.builtin.unarchive:
         src: "/tmp/cmdline-tools.zip"
-        dest: "/opt/android-sdk"
+        dest: "{{ android_home }}"
         remote_src: yes
 
     - name: Download Android Studio
