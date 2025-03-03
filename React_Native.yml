@@ -60,16 +60,18 @@
         state: directory
         mode: '0755'
 
-    - name: Download Android SDK
+    - name: Download commandline tools
       get_url:
-        url: "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
-        dest: "/tmp/cmdline-tools.zip"
+        url: https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        dest: /tmp/cmdline-tools.zip
 
-    - name: Extract Android SDK
-      ansible.builtin.unarchive:
-        src: "/tmp/cmdline-tools.zip"
-        dest: "{{ android_home }}"
+    - name: Extract commandline tools (fixed structure)
+      unarchive:
+        src: /tmp/cmdline-tools.zip
+        dest: "{{ android_home }}/cmdline-tools"
         remote_src: yes
+        extra_opts:
+          - --strip-components=1
 
     - name: Download Android Studio
       get_url:
@@ -98,6 +100,13 @@
           export ANDROID_HOME="{{ android_home }}"
           export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
           export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools"
+
+    - name: Accept licenses and install packages
+      block:
+        - name: Accept Android licenses
+          shell: "{{ android_home }}/cmdline-tools/latest/bin/sdkmanager --licenses <<< y"
+          args:
+            executable: /bin/bash
 
     - name: Install Android packages
       shell: |
