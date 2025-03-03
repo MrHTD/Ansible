@@ -2,6 +2,7 @@
   become: yes
   vars:
     android_home: "/opt/android-sdk"
+    android_ndk_version: "25.1.8937393"
 
   tasks:
     - name: Installing required packages (npm, curl)
@@ -90,14 +91,32 @@
           export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
           export PATH=$PATH:$ANDROID_HOME/platform-tools
 
+    - name: Configure environment
+      blockinfile:
+        path: ~/.bashrc
+        block: |
+          export ANDROID_HOME="{{ android_home }}"
+          export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+          export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools"
+
+    - name: Install Android packages
+      shell: |
+        source ~/.bashrc
+        yes | sdkmanager --licenses
+        yes | sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+      args:
+        executable: /bin/bash
+
     - name: Install Android SDK packages
       shell: |
-        yes | sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+        source ~/.bashrc
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
       args:
         executable: /bin/bash
 
     - name: Install Android NDK
       shell: |
+        source ~/.bashrc
         yes | sdkmanager --install "ndk;{{ android_ndk_version }}"
       args:
         executable: /bin/bash
