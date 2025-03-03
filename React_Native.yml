@@ -25,7 +25,7 @@
 
     - name: Configure NVM in .bashrc
       blockinfile:
-        path: "{{ ansible_env.HOME }}/.bashrc"
+        path: "~/.bashrc"
         block: |
           export NVM_DIR="$HOME/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
