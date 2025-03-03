@@ -20,10 +20,10 @@
       shell: |
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
       args:
-        creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"  # Makes task idempotent
+        creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
         executable: /bin/bash
 
-    - name: Ensure NVM configuration in bashrc
+    - name: Configure NVM in shell rc
       blockinfile:
         path: "{{ ansible_env.HOME }}/.bashrc"
         marker: "# {mark} ANSIBLE MANAGED NVM CONFIG"
@@ -31,6 +31,19 @@
           export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
           [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+    - name: Load NVM immediately
+      shell: |
+        source "{{ ansible_env.HOME }}/.nvm/nvm.sh"
+        nvm --version
+      args:
+        executable: /bin/bash
+      register: nvm_version
+      changed_when: false
+
+    - name: Show NVM version
+      debug:
+        msg: "NVM version: {{ nvm_version.stdout }}"
 
     # - name: Install Node.js (LTS)
     #   shell: |
