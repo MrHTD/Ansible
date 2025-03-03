@@ -20,120 +20,103 @@
       shell: |
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash
       args:
-        creates: "{{ ansible_env.HOME }}/.nvm/nvm.sh"
         executable: /bin/bash
 
-    - name: Ensure NVM config in bashrc
+    - name: Configure NVM in .bashrc
       blockinfile:
         path: "{{ ansible_env.HOME }}/.bashrc"
-        marker: "# {mark} ANSIBLE MANAGED NVM CONFIG"
         block: |
-          export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+          [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-    - name: Load NVM in current session
+    - name: Install Node.js (LTS)
       shell: |
-        source "{{ ansible_env.HOME }}/.nvm/nvm.sh"
-        nvm --version
+        export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        nvm install --lts
       args:
         executable: /bin/bash
-      register: nvm_version_check
-      changed_when: false
 
-    - name: Verify NVM installation
-      debug:
-        msg: 
-          - "NVM version: {{ nvm_version_check.stdout }}"
-          - "If you see 'command not found', reload shell with: source ~/.bashrc"
+    - name: Install Yarn
+      shell: |
+        export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        npm install -g yarn
+      args:
+        executable: /bin/bash
 
-    # - name: Install Node.js (LTS)
-    #   shell: |
-    #     export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
-    #     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    #     nvm install --lts
-    #   args:
-    #     executable: /bin/bash
+    - name: Install React Native CLI
+      shell: |
+        export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        npm install -g react-native-cli
+      args:
+        executable: /bin/bash
 
-    # - name: Install Yarn
-    #   shell: |
-    #     export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
-    #     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    #     npm install -g yarn
-    #   args:
-    #     executable: /bin/bash
+    - name: Create Android SDK directory
+      file:
+        path: "{{ android_home }}"
+        state: directory
+        mode: '0755'
 
-    # - name: Install React Native CLI
-    #   shell: |
-    #     export NVM_DIR="{{ ansible_env.HOME }}/.nvm"
-    #     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    #     npm install -g react-native-cli
-    #   args:
-    #     executable: /bin/bash
+    - name: Download Android SDK
+      get_url:
+        url: "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+        dest: "/tmp/cmdline-tools.zip"
 
-    # - name: Create Android SDK directory
-    #   file:
-    #     path: "{{ android_home }}"
-    #     state: directory
-    #     mode: '0755'
+    - name: Extract Android SDK
+      ansible.builtin.unarchive:
+        src: "/tmp/cmdline-tools.zip"
+        dest: "{{ android_home }}"
+        remote_src: yes
 
-    # - name: Download Android SDK
-    #   get_url:
-    #     url: "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
-    #     dest: "/tmp/cmdline-tools.zip"
+    - name: Download Android Studio
+      get_url:
+        url: "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2024.2.2.15/android-studio-2024.2.2.15-linux.tar.gz"
+        dest: "/tmp/android-studio.tar.gz"
 
-    # - name: Extract Android SDK
-    #   ansible.builtin.unarchive:
-    #     src: "/tmp/cmdline-tools.zip"
-    #     dest: "{{ android_home }}"
-    #     remote_src: yes
+    - name: Extract Android Studio
+      unarchive:
+        src: "/tmp/android-studio.tar.gz"
+        dest: "/opt/"
+        remote_src: yes
 
-    # - name: Download Android Studio
-    #   get_url:
-    #     url: "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2024.2.2.15/android-studio-2024.2.2.15-linux.tar.gz"
-    #     dest: "/tmp/android-studio.tar.gz"
+    - name: Set Android environment variables
+      blockinfile:
+        path: ~/.bashrc
+        block: |
+          export ANDROID_HOME=$HOME/Android/Sdk
+          export PATH=$PATH:$ANDROID_HOME/emulator
+          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+          export PATH=$PATH:$ANDROID_HOME/platform-tools
 
-    # - name: Extract Android Studio
-    #   unarchive:
-    #     src: "/tmp/android-studio.tar.gz"
-    #     dest: "/opt/"
-    #     remote_src: yes
+    - name: Configure environment
+      blockinfile:
+        path: ~/.bashrc
+        block: |
+          export ANDROID_HOME="{{ android_home }}"
+          export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+          export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools"
 
-    # - name: Set Android environment variables
-    #   blockinfile:
-    #     path: ~/.bashrc
-    #     block: |
-    #       export ANDROID_HOME=$HOME/Android/Sdk
-    #       export PATH=$PATH:$ANDROID_HOME/emulator
-    #       export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
-    #       export PATH=$PATH:$ANDROID_HOME/platform-tools
+    - name: Install Android packages
+      shell: |
+        source ~/.bashrc
+        yes | sdkmanager --licenses
+        yes | sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+      args:
+        executable: /bin/bash
 
-    # - name: Configure environment
-    #   blockinfile:
-    #     path: ~/.bashrc
-    #     block: |
-    #       export ANDROID_HOME="{{ android_home }}"
-    #       export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-    #       export PATH="$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools"
+    - name: Install Android SDK packages
+      shell: |
+        source ~/.bashrc
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+      args:
+        executable: /bin/bash
 
-    # - name: Install Android packages
-    #   shell: |
-    #     source ~/.bashrc
-    #     yes | sdkmanager --licenses
-    #     yes | sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-    #   args:
-    #     executable: /bin/bash
-
-    # - name: Install Android SDK packages
-    #   shell: |
-    #     source ~/.bashrc
-    #     yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-    #   args:
-    #     executable: /bin/bash
-
-    # - name: Install Android NDK
-    #   shell: |
-    #     source ~/.bashrc
-    #     yes | sdkmanager --install "ndk;{{ android_ndk_version }}"
-    #   args:
-    #     executable: /bin/bash
+    - name: Install Android NDK
+      shell: |
+        source ~/.bashrc
+        yes | sdkmanager --install "ndk;{{ android_ndk_version }}"
+      args:
+        executable: /bin/bash
