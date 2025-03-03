@@ -22,6 +22,13 @@
         creates: "~/.nvm/nvm.sh" 
         executable: /bin/bash
 
+    - name: Loading NVM
+      blockinfile:
+        path: ~/.bashrc
+        block: |
+          export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
     - name: Ensure NVM is loaded in .bashrc
       blockinfile:
         path: ~/.bashrc
@@ -37,6 +44,7 @@
 
     - name: Install Node.js (LTS)
       shell: |
+        source ~/.bashrc
         nvm install --lts
       args:
         executable: /bin/bash
