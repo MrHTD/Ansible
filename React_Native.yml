@@ -31,6 +31,8 @@
 
     - name: Install Node.js (LTS)
       shell: |
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
         nvm install --lts
       args:
         executable: /bin/bash
