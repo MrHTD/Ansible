@@ -22,4 +22,8 @@
   <h4>Openvpn Client</h4>
   <pre><code id="copy-command">ansible-playbook openvpn_client.yml --become --ask-become-pass -e "client_name=CLIENT_NAME openvpn_server_ip=SERVER_IP openvpn_port=PORT_HERE"</code></pre>
   <button class="copy-button" onclick="copyToClipboard()"></button>
+
+  <h4>Services Go</h4>
+  <pre><code id="copy-command">ansible-playbook service.yml --become --ask-become-pass -e "service_name=SERVICE_NAME_HERE"</code></pre>
+  <button class="copy-button" onclick="copyToClipboard()"></button>
 </div>
