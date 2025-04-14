@@ -4,8 +4,8 @@
   vars:
     domain_name: "example.com"
     app_port: 3000
-    ssl_certificate_path: "/etc/nginx/ssl/{{ domain_name }}.crt"
-    ssl_certificate_key_path: "/etc/nginx/ssl/{{ domain_name }}.key"
+    ssl_certificate_path: "/etc/letsencrypt/live/{{ domain_name }}/fullchain.pem"
+    ssl_certificate_key_path: "/etc/letsencrypt/live/{{ domain_name }}/privkey.pem"
   
   tasks:
     - name: Create NGINX configuration from template
